@@ -1,0 +1,189 @@
+# Edge transport
+
+# Get hostname
+[System.NET.DNS]::GetHostByName('')
+
+# (L1) Ensure 'Enable sender ID agent' is configured (Automated)
+Get-SenderIdConfig | fl Name,Enabled,SpoofedDomainAction 
+
+# (L1) Ensure 'Configure sender filtering' is set to 'Enabled' (Automated)"
+Get-SenderFilterConfig | fl -property Identity,Enabled 
+
+# (L1) Ensure 'Sender reputation' is configured (Automated)
+Get-SenderReputationConfig | fl Identity,SenderBlockingEnabled,OpenProxyDetectionEnabled,SrlBlockThreshold
+
+# (L1) Ensure ‘Blank sender field’ is configured (Automated)
+Get-SenderFilterConfig | fl Name, Action, BlankSenderBlockingEnabled
+
+# (L1) Ensure ‘Spam quarantine mailbox exists’ is set to ‘’ (Manual)
+Get-ContentFilterConfig | Select Name, QuarantineMailbox
+
+# (L1) Ensure 'SCL Quarantine' is 'Enabled' (Automated)
+Get-ContentFilterConfig | fl Name,QuarantineMailbox,SCL*
+
+# (L1) Ensure ‘Nonexistent recipients’ is set to ‘True’ (Manual)
+Get-RecipientFilterConfig | Select Name, RecipientValidationEnabled
+
+# (L1) Ensure 'Attachment Filtering Agent' is configured (Automated)
+Get-TransportAgent 
+#
+Get-TransportAgent "Attachment Filtering Agent"
+
+# (L1) Ensure 'Maximum receive size: Connector level' is set to '25' (Automated)
+Get-ReceiveConnector | fl -property Identity, MaxMessageSize
+
+# (L1) Ensure 'Transport Pickup Directory Path' is not set (Automated)
+Get-TransportService | fl Identity,PickupDirectoryPath
+
+# (L1) Ensure ‘Exchange recipient filter’ is set to ‘True’ (Automated)
+Get-RecipientFilterConfig | Select Name, Enabled
+
+# (L1) Ensure ‘Internet-facing receive connectors’ is set to ‘Tls, BasicAuth, BasicAuthRequireTLS’ (Automated)
+Get-ReceiveConnector | Select Identity, AuthMechanism
+
+
+# Mailbox servers
+
+# (L1) Ensure 'Mailbox quotas: Issue warning at' is set to '' (Automated)
+Get-MailboxDatabase | fl -property Identity, IssueWarningQuota
+
+# (L1) Ensure 'Retain deleted items for the specified number of days' is set to '14' (Automated)
+Get-MailboxDatabase | fl -property Identity, DeletedItemRetention
+
+# (L1) Ensure 'Mailbox quotas: Prohibit send and receive at' is set to '' (Automated)
+Get-MailboxDatabase | fl -property Identity, ProhibitSendReceiveQuota
+
+# (L1) Ensure 'Mailbox quotas: Prohibit send at' is set to '' (Automated)
+Get-MailboxDatabase | fl -property Identity, ProhibitSendQuota
+
+# (L1) Ensure 'Keep deleted mailboxes for the specified number of days' is set to '30' (Automated)
+Get-Mailboxdatabase | fl -property Identity, MailboxRetention
+
+# (L1) Ensure 'Do not permanently delete items until the database has been backed up' is set to 'True' (Automated)
+Get-MailboxDatabase | fl -property Identity, RetainDeletedItemsUntilBackup
+
+
+# Mail Flow
+
+# (L1) Ensure 'Transport Pickup Directory Path' is not set (Automated)
+Get-TransportService | fl Identity,PickupDirectoryPath
+
+# (L1) Ensure 'Maximum send size: Organization level' is set to '25' (Automated)
+Get-TransportConfig | fl -property Identity, MaxSendSize
+
+# (L1) Ensure 'Maximum receive size: Organization level' is set to '25' (Automated)
+Get-TransportConfig | fl -property Identity, MaxReceiveSize
+
+# (L1) Ensure 'Maximum send size: Connector level' is set to '25' (Automated)
+Get-SendConnector | fl -property Identity,MaxMessageSize
+
+# (L1) Ensure 'Maximum receive size: Connector level' is set to '25' (Automated)
+Get-ReceiveConnector | fl -property Identity,MaxMessageSize
+
+# (L1) Ensure ‘Send connector timeout’ is set to '10' (Automated)
+Get-SendConnector | Select Name, Identity, ConnectionInactivityTimeOut
+
+# (L1) Ensure ‘Receive connector timeout’ is set to '5' (Automated)
+Get-ReceiveConnector | Select Name, Identity, ConnectionTimeout
+
+# (L1) Ensure 'External send connector authentication: DNS routing' is set to 'True' (Automated)
+Get-SendConnector | fl -property Identity, DNSRoutingEnabled
+
+# (L1) Ensure 'External send connector authentication: IgnoreStartTLS' is set to 'False' (Automated)
+Get-SendConnector | fl -property Identity, IgnoreSTARTTLS
+
+# (L1) Ensure 'External send connector authentication: Domain security' is set to 'True' (Automated)
+Get-SendConnector | fl Identity, DomainSecureEnabled
+
+
+# Recipient and Client
+
+# (L2) Ensure 'Enable non-delivery reports to remote domains' is set to 'False' (Automated)
+Get-RemoteDomain | fl -property Identity, NDREnabled
+
+# (L2) Ensure 'Enable OOF messages to remote domains' is set to 'None' (Automated)
+Get-RemoteDomain | fl -property Identity, AllowedOOFType
+
+# (L1) Ensure 'Enable automatic replies to remote domains' is set to 'False' (Automated)
+Get-RemoteDomain | fl -property Identity, AutoReplyEnabled
+
+# (L1) Ensure 'Enable automatic forwards to remote domains' is set to 'False' (Automated)
+Get-RemoteDomain | fl -property Identity, AutoForwardEnabled
+
+# (L1) Ensure 'Enable S/MIME for OWA' is set to 'True' (Automated)
+Get-OWAVirtualDirectory | fl -property Identity, SMimeEnabled
+
+# (L1) Ensure 'Require client MAPI encryption' is set to 'True' (Automated)
+Get-RpcClientAccess | fl -property Identity, EncryptionRequired
+
+
+# Services
+
+# (L1) Ensure 'POP3' Windows services are 'Disabled' (Automated)
+Get-Service MSExchangePOP3* | ft Name,DisplayName,Status,StartType
+
+# (L1) Ensure 'IMAP4' Windows services are 'Disabled' (Automated)
+Get-Service MSExchangeImap4* | ft Name,DisplayName,Status,Starttype
+
+# (L1) Ensure 'Receive connector’ is set to ‘TLS’ (Manual)
+Get-ReceiveConnector | Select Name, Identity, AuthMechanism
+
+# (L2) Ensure ‘Send Exchange Customer Experience reports’ is set to ‘False’ (Automated)
+Get-OrganizationConfig | Select Name, Identity, CustomerFeedbackEnabled
+
+# (L1) Ensure 'SMTP automated banner response’ is set to ‘220 SMTP Server Ready’ (Automated)
+Get-ReceiveConnector | Select Name, Identity, Banner
+
+
+# MDM
+
+# (L1) Ensure 'Allow simple passwords' is set to 'False' (Automated)
+Get-MobileDeviceMailboxPolicy | fl -property AllowSimplePassword
+
+# (L1) Ensure 'Allow unmanaged devices' is set to 'False' (Automated)
+Get-MobileDeviceMailboxPolicy  | fl -property Identity, AllowNonProvisionableDevices
+
+# (L1) Ensure 'Enforce password history' is set to '4' or greater (Automated)
+Get-MobileDeviceMailboxPolicy | fl -property PasswordHistory
+
+# (L1) Ensure 'Minimum password length' is set to '4' or more (Automated)
+Get-MobileDeviceMailboxPolicy | fl -property MinPasswordLength
+
+# (L1) Ensure 'Number of attempts allowed' is set to '10' (Automated)
+Get-MobileDeviceMailboxPolicy | fl -property Identity, MaxPasswordFailedAttempts
+
+# (L1) Ensure 'Password expiration' is set to '365' or less (Automated)
+Get-MobileDeviceMailboxPolicy | fl -property PasswordExpiration
+
+# (L1) Ensure 'Refresh interval' is set to '1' (Automated)
+Get-MobileDeviceMailboxPolicy | fl -property Identity, DevicePolicyRefreshInterval
+
+# (L1) Ensure 'Require alphanumeric password' is set to 'True' (Automated)
+Get-MobileDeviceMailboxPolicy | fl -property Identity, AlphanumericPasswordRequired
+
+# (L1) Ensure 'Require encryption on device' is set to 'True' (Automated)
+Get-MobileDeviceMailboxPolicy | fl -property Identity, RequireDeviceEncryption
+
+# (L1) Ensure 'Require password' is set to 'True' (Automated)
+Get-MobileDeviceMailboxPolicy | fl -property Identity, PasswordEnabled
+
+# (L1) Ensure 'Time without user input before password must be re-entered' is set to '15' (Automated)
+Get-MobileDeviceMailboxPolicy | fl -property Identity, MaxInactivityTimeLock
+
+# Logging
+
+# (L1) Ensure 'Receive connector: Configure protocol logging' is set to 'Verbose' (Automated)
+Get-ReceiveConnector | fl -property Identity, ProtocolLoggingLevel
+
+# (L1) Ensure 'Turn on administrator audit logging' is set to '' (Automated)
+Get-AdminAuditLogConfig | fl AdminAuditLog*,LogLevel
+
+# (L1) Ensure 'Turn on connectivity logging' is set to 'True' (Automated)
+Get-TransportService  | fl -property Identity, ConnectivityLogEnabled
+
+# (L1) Ensure 'Send connector: Configure protocol logging' is set to 'Verbose' (Automated)
+Get-SendConnector | fl -property Identity, ProtocolLoggingLevel
+
+# (L1) Ensure 'Message tracking logging' is set to 'True' (Automated)
+Get-TransportService | fl -property Identity, MessageTrackingLogEnabled
+
